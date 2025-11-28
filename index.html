@@ -1,11 +1,779 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Mikko Tirronen Software Developer</title>
-    </head>
-    <body>
-        <div id="root"></div>
-    </body>
+  <head>
+    <meta charset="utf-8" />
+    <title>Mikko Tirronen — Portfolio</title>
+
+    <!-- Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="shortcut icon" href="/assets/hammerIcon.png" type="image/png" />
+
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+    <style>
+      :root {
+        --surface: #ffffffef;
+        --text: #111;
+        --muted: #666;
+        --accent: #f4b276;
+        --bg-overlay: rgba(255, 255, 255, 0.65);
+        --card-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+        --max-width: 980px;
+        --gutter: 24px;
+        --radius: 14px;
+        --nav-height: 70px;
+      }
+
+      :root[data-theme="dark"] {
+        --surface: rgba(20, 20, 20, 0.95);
+        --text: #f4f4f5;
+        --muted: #c0c0c8;
+        --accent: #f4b276;
+        --bg-overlay: rgba(0, 0, 0, 0.35);
+        --card-shadow: 0 14px 40px rgba(0, 0, 0, 0.5);
+      }
+
+      /* Reset / Base */
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial;
+        background: transparent;
+      }
+      body {
+        color: var(--text);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      /* Background canvas & overlay */
+      canvas#bg-animation {
+        position: fixed;
+        inset: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: -3;
+        pointer-events: none;
+      }
+      .bg-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: -2;
+        pointer-events: none;
+        background: var(--bg-overlay);
+        backdrop-filter: blur(2px);
+      }
+
+      /* Page layout */
+      .page {
+        max-width: var(--max-width);
+        margin: 0 auto;
+        padding: calc(var(--nav-height) + 28px) var(--gutter) 120px;
+      }
+
+      /* Navigation */
+      .nav {
+        position: sticky;
+        top: 12px;
+        z-index: 40;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        max-width: var(--max-width);
+        margin: 12px auto 0;
+        padding: 10px var(--gutter);
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.7),
+          rgba(255, 255, 255, 0.55)
+        );
+        border-radius: 999px;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+        backdrop-filter: blur(6px);
+      }
+      :root[data-theme="dark"] .nav {
+        background: linear-gradient(
+          180deg,
+          rgba(16, 16, 16, 0.6),
+          rgba(20, 20, 20, 0.55)
+        );
+        box-shadow: 0 8px 22px rgba(0, 0, 0, 0.45);
+      }
+      .nav-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding-left: 5px;
+      }
+      .nav-left img {
+        border-radius: 12px;
+      }
+      .brand {
+        font-family: "JetBrains Mono", monospace;
+        font-weight: 700;
+        font-size: 1.05rem;
+        letter-spacing: -0.5px;
+      }
+      .nav-links {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .nav-links a {
+        padding: 8px 12px;
+        border-radius: 8px;
+        font-weight: 500;
+        color: var(--muted);
+      }
+      .nav-links a.active {
+        background: linear-gradient(90deg, var(--accent), #e97181);
+        color: #111;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+      }
+      .theme-toggle {
+        padding: 8px;
+        border-radius: 8px;
+        background: transparent;
+        border: 1px solid rgba(0, 0, 0, 0.06);
+        cursor: pointer;
+      }
+
+      /* Header */
+      .header {
+        display: flex;
+        justify-content: flex-end;
+        padding: 36px var(--gutter) 8px;
+        max-width: var(--max-width);
+        margin: 0 auto;
+      }
+      .hero {
+        position: relative;
+        width: 100%;
+        min-height: 20vh;
+        display: flex;
+        justify-content: flex-end; /* right */
+        align-items: flex-end; /* bottom */
+        padding: 3rem var(--gutter);
+        overflow: hidden;
+        border-radius: 12px;
+      }
+
+      /* frosted glass over animated background */
+      .hero::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: rgba(255, 255, 255, 0.25); /* light mode */
+        backdrop-filter: blur(14px) saturate(1.2);
+        -webkit-backdrop-filter: blur(14px) saturate(1.2);
+        z-index: 0;
+      }
+
+      :root[data-theme="dark"] .hero::before {
+        background: rgba(0, 0, 0, 0.32);
+      }
+
+      /* Title + subtitle styles */
+      .hero-overlay {
+        position: relative;
+        z-index: 1;
+        text-align: right;
+        margin: 0;
+        padding: 0;
+      }
+
+      .hero-title {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 4rem;
+        font-weight: 700;
+        margin: 0;
+        color: var(--text);
+        letter-spacing: -1px;
+      }
+
+      .hero-subtitle {
+        margin-top: 0.6rem;
+        font-size: 1.3rem;
+        font-weight: 500;
+        color: var(--muted);
+      }
+
+      /* Cards */
+      .card {
+        background: var(--surface);
+        border-radius: var(--radius);
+        box-shadow: var(--card-shadow);
+        padding: 40px;
+        margin: 36px 0;
+        transition: transform 0.28s cubic-bezier(0.2, 0.9, 0.2, 1),
+          box-shadow 0.28s, opacity 0.28s;
+        will-change: transform, opacity;
+        transform: translateY(var(--initial-offset, 24px));
+        opacity: 0;
+      }
+      .card.inview {
+        transform: translateY(var(--parallax-offset, 0));
+        opacity: 1;
+      }
+
+      /* Sections inside cards */
+      .card h2 {
+        font-family: "JetBrains Mono", monospace;
+        font-weight: 600;
+        margin: 0 0 16px;
+        font-size: 20px;
+        color: var(--text);
+      }
+
+      /* About grid */
+      .about-grid {
+        display: grid;
+        grid-template-columns: 1fr 320px;
+        gap: 28px;
+        align-items: center;
+      }
+      .about-text p {
+        margin: 0 0 12px;
+        color: var(--text);
+        line-height: 1.6;
+        font-size: 15px;
+      }
+      .about-photo {
+        width: 100%;
+        max-width: 320px;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 6px solid rgba(0, 0, 0, 0.06);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+      }
+      .about-photo img {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+
+      /* Skills grid */
+      .skills-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 16px;
+      }
+      .skill {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        padding: 10px 12px;
+        border-radius: 10px;
+        background: #f6f6f6;
+        font-weight: 600;
+        color: #222;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+      }
+      .skill img {
+        width: 28px;
+        height: 28px;
+        opacity: 0.95;
+      }
+
+      /* Projects */
+      .projects-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 20px;
+      }
+      .project {
+        background: var(--surface);
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: var(--card-shadow);
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .project h3 {
+        margin: 0;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 1.1rem;
+      }
+      .project .meta {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .project .meta img {
+        width: 30px;
+        height: 30px;
+        opacity: 0.9;
+      }
+      .project p {
+        margin: 0;
+        color: #333;
+        font-size: 14px;
+        line-height: 1.5;
+      }
+      .project .links {
+        margin-top: auto;
+        display: flex;
+        gap: 8px;
+      }
+      .btn {
+        background: var(--accent);
+        color: #111;
+        padding: 8px 12px;
+        border-radius: 999px;
+        font-weight: 600;
+        text-decoration: none;
+      }
+      .btn.ghost {
+        background: transparent;
+        border: 1px solid rgba(0, 0, 0, 0.06);
+        color: var(--text);
+      }
+
+      /* Experience / footer */
+      .two-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+      }
+      .muted {
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      /* Parallax helper */
+      .parallax {
+        will-change: transform;
+        --parallax-offset: 0;
+      }
+
+      /* Responsive */
+      @media (max-width: 980px) {
+        .about-grid {
+          grid-template-columns: 1fr;
+        }
+        .title {
+          font-size: 36px;
+        }
+        .header {
+          padding: 18px var(--gutter) 0 0;
+        }
+        .nav {
+          padding: 8px 14px;
+        }
+      }
+      @media (max-width: 640px) {
+        .page {
+          padding: var(--nav-height) 16px 80px;
+        }
+        .nav {
+          position: fixed;
+          left: 12px;
+          right: 12px;
+          top: 12px;
+        }
+        .header {
+          padding-top: 84px;
+        }
+        .title {
+          font-size: 28px;
+        }
+      }
+
+      /* Dark theme specific overrides */
+
+      :root[data-theme="dark"] .project h3 {
+        color: #fff;
+      }
+      :root[data-theme="dark"] .project p {
+        color: #e2e2e6;
+      }
+      :root[data-theme="dark"] .project .meta img {
+        filter: brightness(1.2);
+      }
+      :root[data-theme="dark"] .project,
+      :root[data-theme="dark"] .card {
+        background: rgba(28, 28, 32, 0.92);
+      }
+      :root[data-theme="dark"] .hero-title-block {
+        background: rgba(28, 28, 32, 0.35);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      :root[data-theme="dark"] .hero .subtitle,
+      :root[data-theme="dark"] .hero .title {
+        color: #fff;
+        -webkit-text-stroke: 1px rgba(0, 0, 0, 0.6);
+      }
+    </style>
+  </head>
+  <body data-theme="light">
+    <!-- Background (your script should draw into canvas) -->
+    <canvas id="bg-animation"></canvas>
+    <div class="bg-overlay" aria-hidden="true"></div>
+
+    <!-- top nav -->
+    <nav class="nav" role="navigation" aria-label="Main navigation">
+      <div class="nav-left">
+        <!-- <img src="/assets/hammerIcon.png" alt="Brand Logo" class="brand-logo" width="50px" rounded /> -->
+        <div class="brand">MikkoT</div>
+      </div>
+
+      <div class="nav-links" role="menubar" aria-label="Sections">
+        <a href="#about" data-link class="active">About</a>
+        <a href="#skills" data-link>Skills</a>
+        <a href="#projects" data-link>Projects</a>
+        <a href="#contact" data-link>Contact</a>
+      </div>
+
+      <div style="display: flex; gap: 8px; align-items: center">
+        <button id="themeToggle" class="theme-toggle" aria-label="Toggle theme">
+          🌙
+        </button>
+      </div>
+    </nav>
+
+    <main class="page" id="page">
+      <!-- header block -->
+      <header class="hero" id="top">
+        <div class="hero-overlay">
+          <h1 class="hero-title">Mikko Tirronen</h1>
+          <div class="hero-subtitle">Junior Software Engineer</div>
+        </div>
+      </header>
+
+      <!-- ABOUT -->
+      <section class="card parallax" id="about">
+        <div class="about-grid">
+          <div class="about-text">
+            <h2>About</h2>
+            <p>
+              Hi — I build web apps that are pragmatic and visually considerate.
+              I enjoy working across stacks, designing clean APIs, and adding
+              small creative flourishes on the frontend. My current interests:
+              generative art, smooth UX and resilient backend patterns.
+            </p>
+            <p class="muted">
+              This site showcases a few projects and experiments — the
+              generative background is a small creative playground I use to test
+              ideas.
+            </p>
+          </div>
+          <div class="about-photo">
+            <img
+              src="https://via.placeholder.com/600x600.png?text=Profile+Photo"
+              alt="Profile photo"
+            />
+          </div>
+        </div>
+      </section>
+
+      <!-- SKILLS -->
+      <section class="card parallax" id="skills">
+        <h2>Skills</h2>
+        <div class="skills-grid">
+          <div class="skill">
+            <img
+              src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/javascript.svg"
+              alt=""
+            /><span>JavaScript</span>
+          </div>
+          <div class="skill">
+            <img
+              src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/typescript.svg"
+              alt=""
+            /><span>TypeScript</span>
+          </div>
+          <div class="skill">
+            <img
+              src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/node-dot-js.svg"
+              alt=""
+            /><span>Node.js</span>
+          </div>
+          <div class="skill">
+            <img
+              src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/react.svg"
+              alt=""
+            /><span>React</span>
+          </div>
+          <div class="skill">
+            <img
+              src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/docker.svg"
+              alt=""
+            /><span>Docker</span>
+          </div>
+          <div class="skill">
+            <img
+              src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/amazonaws.svg"
+              alt=""
+            /><span>AWS</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- PROJECTS -->
+      <section class="card parallax" id="projects">
+        <h2>Projects</h2>
+
+        <div class="projects-grid">
+          <article class="project" id="proj-alpha">
+            <div class="meta">
+              <h3>Project Alpha</h3>
+            </div>
+            <div class="project-icons meta" aria-hidden="true">
+              <img
+                src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/javascript.svg"
+                alt=""
+              />
+              <img
+                src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/d3-dot-js.svg"
+                alt=""
+              />
+            </div>
+            <p>
+              Dynamic data visualizations with p5 & D3, focused on interactions
+              and realtime rendering.
+            </p>
+            <div class="links project-links">
+              <a class="btn" href="#" target="_blank" rel="noopener">Live</a>
+              <a class="btn ghost" href="#" target="_blank" rel="noopener"
+                >Source</a
+              >
+            </div>
+          </article>
+
+          <article class="project" id="proj-beta">
+            <div class="meta">
+              <h3>Project Beta</h3>
+            </div>
+            <div class="project-icons meta" aria-hidden="true">
+              <img
+                src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/react.svg"
+                alt=""
+              />
+              <img
+                src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/node-dot-js.svg"
+                alt=""
+              />
+            </div>
+            <p>
+              A small full-stack commerce prototype with Node API & React
+              frontend (cart, checkout, demo data).
+            </p>
+            <div class="links project-links">
+              <a class="btn" href="#" target="_blank" rel="noopener">Live</a>
+              <a class="btn ghost" href="#" target="_blank" rel="noopener"
+                >Source</a
+              >
+            </div>
+          </article>
+
+          <article class="project" id="proj-gamma">
+            <div class="meta">
+              <h3>Project Gamma</h3>
+            </div>
+            <div class="project-icons meta" aria-hidden="true">
+              <img
+                src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/html5.svg"
+                alt=""
+              />
+              <img
+                src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/websocket.svg"
+                alt=""
+              />
+            </div>
+            <p>
+              Multiplayer canvas game with WebSocket sync and minimal
+              authoritative server logic.
+            </p>
+            <div class="links project-links">
+              <a class="btn" href="#" target="_blank" rel="noopener">Live</a>
+              <a class="btn ghost" href="#" target="_blank" rel="noopener"
+                >Source</a
+              >
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- EXPERIENCE / WORK -->
+      <section class="card parallax" id="experience">
+        <h2>Experience</h2>
+        <div class="two-col">
+          <div>
+            <h4 style="margin: 0 0 10px; font-weight: 600">
+              Freelance / Side Projects
+            </h4>
+            <p class="muted">
+              Handled full-stack builds, small product features, and creative
+              coding gigs. Focus on shipping MVPs and iterative improvements.
+            </p>
+          </div>
+          <div>
+            <h4 style="margin: 0 0 10px; font-weight: 600">
+              Tools & Practices
+            </h4>
+            <p class="muted">
+              CI/CD pipelines, Docker-based deployments, basic infra on AWS,
+              monitoring and pragmatic security hygiene.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- CONTACT -->
+      <section class="card parallax" id="contact">
+        <h2>Contact</h2>
+        <p>
+          If you'd like to talk about a project or role, please reach out —
+          happy to chat.
+        </p>
+        <div style="margin-top: 14px">
+          <a class="btn" href="mailto:mikko@example.com">Email</a>
+          <a
+            class="btn ghost"
+            href="https://github.com/username"
+            target="_blank"
+            >GitHub</a
+          >
+        </div>
+      </section>
+    </main>
+
+    <!-- Scripts: nav highlighting, theme toggle, parallax, resize throttling for background -->
+    <script>
+      // THEME TOGGLE (with aria-pressed)
+      (function () {
+        const root = document.documentElement;
+        const toggle = document.getElementById("themeToggle");
+        const saved = localStorage.getItem("siteTheme") || "light";
+        root.setAttribute("data-theme", saved);
+        toggle.textContent = saved === "dark" ? "☀️" : "🌙";
+        toggle.setAttribute("aria-pressed", saved === "dark");
+
+        toggle.addEventListener("click", () => {
+          const cur =
+            root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+          root.setAttribute("data-theme", cur);
+          localStorage.setItem("siteTheme", cur);
+          toggle.textContent = cur === "dark" ? "☀️" : "🌙";
+          toggle.setAttribute("aria-pressed", cur === "dark");
+        });
+      })();
+
+      // NAV HIGHLIGHT + SMOOTH SCROLL
+      (function () {
+        const links = Array.from(document.querySelectorAll("[data-link]"));
+        const sections = links.map((l) =>
+          document.querySelector(l.getAttribute("href"))
+        );
+
+        links.forEach((l) =>
+          l.addEventListener("click", (e) => {
+            e.preventDefault();
+            const id = l.getAttribute("href");
+            document
+              .querySelector(id)
+              .scrollIntoView({ behavior: "smooth", block: "start" });
+          })
+        );
+
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((ent) => {
+              if (ent.isIntersecting) {
+                const id = "#" + ent.target.id;
+                links.forEach((a) =>
+                  a.classList.toggle("active", a.getAttribute("href") === id)
+                );
+              }
+            });
+          },
+          { threshold: 0.45 }
+        );
+        sections.forEach((s) => s && observer.observe(s));
+      })();
+
+      // FADE-IN ON SCROLL
+      (function () {
+        const cards = document.querySelectorAll(".card");
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach(
+              (e) => e.isIntersecting && e.target.classList.add("inview")
+            );
+          },
+          { threshold: 0.15 }
+        );
+        cards.forEach((c) => observer.observe(c));
+      })();
+
+      // PARALLAX SCROLL (subtle)
+      (function () {
+        const parallaxTargets = Array.from(
+          document.querySelectorAll(".parallax")
+        );
+
+        function onScroll() {
+          const centerY = window.innerHeight / 2;
+          parallaxTargets.forEach((el) => {
+            const rect = el.getBoundingClientRect();
+            const dist = rect.top + rect.height / 2 - centerY;
+            const t = Math.max(-10, Math.min(10, -dist * 0.02));
+            el.style.setProperty("--parallax-offset", `${t}px`);
+            el.style.transform = `translateY(var(--parallax-offset)) translateY(var(--initial-offset,0))`;
+          });
+        }
+
+        window.addEventListener("scroll", onScroll, { passive: true });
+        window.addEventListener("resize", onScroll);
+        window.addEventListener("load", onScroll);
+      })();
+
+      // BACKGROUND REGENERATION (debounced)
+      (function () {
+        let resizeTimeout;
+        window.addEventListener("resize", () => {
+          clearTimeout(resizeTimeout);
+          resizeTimeout = setTimeout(() => {
+            window.dispatchEvent(new CustomEvent("bg:regenerate"));
+            if (typeof window.backgroundRegenerate === "function") {
+              try {
+                window.backgroundRegenerate();
+              } catch {}
+            }
+          }, 500);
+        });
+        window.addEventListener("load", () => {
+          window.dispatchEvent(new CustomEvent("bg:regenerate-initial"));
+        });
+      })();
+    </script>
+
+    <!-- Your existing background animation should be included here.
+       The page dispatches a 'bg:regenerate-initial' event on load,
+       and 'bg:regenerate' (debounced) on resize.
+       If your BackgroundAnimation.js listens to those events, it can regenerate only when needed.
+       Alternatively, if your script exposes window.backgroundRegenerate = () => {...}
+       this page will call it safely on resize (debounced).
+  -->
+    <script
+      type="module"
+      src="./js/animation/BackgroundAnimation.js"
+      defer
+    ></script>
+  </body>
 </html>

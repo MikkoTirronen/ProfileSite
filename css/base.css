@@ -1,0 +1,45 @@
+  body { 
+    display:block;
+    margin: 0; 
+    overflow: hidden; 
+    font-family: "Fira Code", "JetBrains Mono", "Source Code Pro", "Roboto Mono", monospace;
+    margin: 20px;
+    padding-top: 100px;
+  }
+
+canvas#bg-animation {
+  position: fixed;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+}
+
+.header-content{
+  text-align: end;
+  color: rgb(97, 26, 26);
+  font-size: 30px;
+  text-shadow:
+    -2px -2px 0 white,
+     2px -2px 0 white,
+    -2px  2px 0 white,
+     2px  2px 0 white;
+}
+.header-content p{
+  margin: 0;
+  font-weight: 600;
+  padding-right: 10px;
+}
+.header-content h1{
+  margin-bottom: 0;
+  font-size: 50px;
+  padding-right: 10px;
+}
+
+.home{
+  background-color: white;
+  padding: 20px;
+  margin:10px;
+  border: 5px solid black;
+  border-radius: 10px;
+  opacity: 90%;
+}
