@@ -24,7 +24,7 @@
         --max-width: 980px;
         --gutter: 24px;
         --radius: 14px;
-        --nav-height: 20px;
+        --nav-height: 0px; /* restored sensible nav height */
       }
 
       :root[data-theme="dark"] {
@@ -34,14 +34,6 @@
         --accent: #f4b276;
         --bg-overlay: rgba(0, 0, 0, 0.35);
         --card-shadow: 0 14px 40px rgba(0, 0, 0, 0.5);
-      }
-      :root[data-theme="light"] .hero::before {
-        background: linear-gradient(
-          to bottom,
-          rgba(255, 255, 255, 0.55),
-          rgba(255, 255, 255, 0.35) 40%,
-          rgba(255, 255, 255, 0.15) 100%
-        );
       }
 
       /* Reset / Base */
@@ -88,36 +80,33 @@
       .page {
         max-width: var(--max-width);
         margin: 0 auto;
-        padding: calc(var(--nav-height) + 28px) var(--gutter) 120px;
+        padding: 28px var(--gutter) 120px;
       }
 
       /* Navigation */
       .nav {
         position: sticky;
         top: 12px;
-        z-index: 40;
+        z-index: 999; /* ensure nav stays on top */
         display: flex;
         justify-content: space-between;
         align-items: center;
         gap: 12px;
         max-width: var(--max-width);
-        margin: 12px auto 0;
+        margin: 12px auto 16px; /* added bottom margin for separation */
         padding: 10px var(--gutter);
-        background: linear-gradient(
-          180deg,
-          rgba(255, 255, 255, 0.7),
-          rgba(255, 255, 255, 0.55)
-        );
+        background: rgba(
+          255,
+          255,
+          255,
+          0.92
+        ); /* slightly more opaque so it never "disappears" */
         border-radius: 999px;
         box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
         backdrop-filter: blur(6px);
       }
       :root[data-theme="dark"] .nav {
-        background: linear-gradient(
-          180deg,
-          rgba(16, 16, 16, 0.6),
-          rgba(20, 20, 20, 0.55)
-        );
+        background: rgba(20, 20, 20, 0.92);
         box-shadow: 0 8px 22px rgba(0, 0, 0, 0.45);
       }
       .nav-left {
@@ -157,7 +146,7 @@
         background: transparent;
         border: 1px solid rgba(0, 0, 0, 0.06);
         cursor: pointer;
-        margin-right: 20px;
+        margin-right: 8px; /* smaller baseline margin */
       }
 
       /* Header */
@@ -171,10 +160,10 @@
       .hero {
         position: relative;
         width: 100%;
-        min-height: 20vh;
+        min-height: 28vh;
         display: flex;
-        justify-content: flex-end; /* right */
-        align-items: flex-end; /* bottom */
+        justify-content: flex-end;
+        align-items: flex-end;
         padding: 3rem var(--gutter);
         overflow: hidden;
         border-radius: 12px;
@@ -206,7 +195,7 @@
 
       .hero-title {
         font-family: "JetBrains Mono", monospace;
-        font-size: 4rem;
+        font-size: 3.2rem;
         font-weight: 700;
         margin: 0;
         color: var(--text);
@@ -215,26 +204,23 @@
 
       .hero-subtitle {
         margin-top: 0.6rem;
-        font-size: 1.3rem;
+        font-size: 1.1rem;
         font-weight: 500;
         color: var(--muted);
       }
 
-      /* Cards */
+      /* Cards (parallax removed — fade-only) */
       .card {
         background: var(--surface);
         border-radius: var(--radius);
         box-shadow: var(--card-shadow);
         padding: 40px;
         margin: 36px 0;
-        transition: transform 0.28s cubic-bezier(0.2, 0.9, 0.2, 1),
-          box-shadow 0.28s, opacity 0.28s;
-        will-change: transform, opacity;
-        transform: translateY(var(--initial-offset, 24px));
+        will-change: opacity;
         opacity: 0;
+        transition: opacity 420ms ease;
       }
       .card.inview {
-        transform: translateY(var(--parallax-offset, 0));
         opacity: 1;
       }
 
@@ -363,10 +349,9 @@
         font-size: 14px;
       }
 
-      /* Parallax helper */
+      /* Parallax helper (kept harmless) */
       .parallax {
-        will-change: transform;
-        --parallax-offset: 0;
+        will-change: opacity;
       }
 
       /* Responsive */
@@ -374,8 +359,8 @@
         .about-grid {
           grid-template-columns: 1fr;
         }
-        .title {
-          font-size: 36px;
+        .hero-title {
+          font-size: 2.6rem;
         }
         .header {
           padding: 18px var(--gutter) 0 0;
@@ -392,20 +377,21 @@
           padding: 6px 10px;
           display: flex;
           justify-content: space-between;
-          
         }
 
-       
         .header {
           padding-top: 84px;
         }
-        .title {
-          font-size: 28px;
+        .hero-title {
+          font-size: 1.9rem;
+        }
+        /* keep the theme toggle inside the pill */
+        .theme-toggle {
+          margin-right: 0;
         }
       }
 
       /* Dark theme specific overrides */
-
       :root[data-theme="dark"] .project h3 {
         color: #fff;
       }
@@ -419,16 +405,6 @@
       :root[data-theme="dark"] .card {
         background: rgba(28, 28, 32, 0.92);
       }
-      :root[data-theme="dark"] .hero-title-block {
-        background: rgba(28, 28, 32, 0.35);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-      }
-
-      :root[data-theme="dark"] .hero .subtitle,
-      :root[data-theme="dark"] .hero .title {
-        color: #fff;
-        -webkit-text-stroke: 1px rgba(0, 0, 0, 0.6);
-      }
       :root[data-theme="dark"] .hero::before {
         background: rgba(0, 0, 0, 0.55);
       }
@@ -440,27 +416,27 @@
     <div class="bg-overlay" aria-hidden="true"></div>
 
     <!-- top nav -->
-    <nav class="nav" role="navigation" aria-label="Main navigation">
-      <div class="nav-left">
-        <!-- <img src="/assets/hammerIcon.png" alt="Brand Logo" class="brand-logo" width="50px" rounded /> -->
-        <!--<div class="brand">MikkoT</div>-->
-      </div>
-
-      <div class="nav-links" role="menubar" aria-label="Sections">
-        <a href="#about" data-link class="active">About</a>
-        <a href="#skills" data-link>Skills</a>
-        <a href="#projects" data-link>Projects</a>
-        <a href="#contact" data-link>Contact</a>
-      </div>
-
-      <div style="display: flex; gap: 8px; align-items: center">
-        <button id="themeToggle" class="theme-toggle" aria-label="Toggle theme">
-          🌙
-        </button>
-      </div>
-    </nav>
-
     <main class="page" id="page">
+      <nav class="nav" role="navigation" aria-label="Main navigation">
+        <div class="nav-left">
+          <!-- optional logo or name -->
+          <!--<div class="brand">MikkoT</div>-->
+        </div>
+  
+        <div class="nav-links" role="menubar" aria-label="Sections">
+          <a href="#about" data-link class="active">About</a>
+          <a href="#skills" data-link>Skills</a>
+          <a href="#projects" data-link>Projects</a>
+          <a href="#contact" data-link>Contact</a>
+        </div>
+  
+        <div style="display: flex; gap: 8px; align-items: center">
+          <button id="themeToggle" class="theme-toggle" aria-label="Toggle theme">
+            🌙
+          </button>
+        </div>
+      </nav>
+      <div style="height: var(--nav-height)"></div>
       <!-- header block -->
       <header class="hero" id="top">
         <div class="hero-overlay">
@@ -667,7 +643,7 @@
       </section>
     </main>
 
-    <!-- Scripts: nav highlighting, theme toggle, parallax, resize throttling for background -->
+    <!-- Scripts: nav highlighting, theme toggle, fade-in, resize throttling -->
     <script>
       // THEME TOGGLE (with aria-pressed)
       (function () {
@@ -721,40 +697,20 @@
         sections.forEach((s) => s && observer.observe(s));
       })();
 
-      // FADE-IN ON SCROLL
+      // FADE-IN ON SCROLL (no transforms)
       (function () {
         const cards = document.querySelectorAll(".card");
         const observer = new IntersectionObserver(
           (entries) => {
-            entries.forEach(
-              (e) => e.isIntersecting && e.target.classList.add("inview")
-            );
+            entries.forEach((e) => {
+              if (e.isIntersecting) {
+                e.target.classList.add("inview");
+              }
+            });
           },
           { threshold: 0.15 }
         );
         cards.forEach((c) => observer.observe(c));
-      })();
-
-      // PARALLAX SCROLL (subtle)
-      (function () {
-        const parallaxTargets = Array.from(
-          document.querySelectorAll(".parallax")
-        );
-
-        function onScroll() {
-          const centerY = window.innerHeight / 2;
-          parallaxTargets.forEach((el) => {
-            const rect = el.getBoundingClientRect();
-            const dist = rect.top + rect.height / 2 - centerY;
-            const t = Math.max(-10, Math.min(10, -dist * 0.02));
-            el.style.setProperty("--parallax-offset", `${t}px`);
-            el.style.transform = `translateY(var(--parallax-offset)) translateY(var(--initial-offset,0))`;
-          });
-        }
-
-        window.addEventListener("scroll", onScroll, { passive: true });
-        window.addEventListener("resize", onScroll);
-        window.addEventListener("load", onScroll);
       })();
 
       // BACKGROUND REGENERATION (debounced)
@@ -777,13 +733,6 @@
       })();
     </script>
 
-    <!-- Your existing background animation should be included here.
-       The page dispatches a 'bg:regenerate-initial' event on load,
-       and 'bg:regenerate' (debounced) on resize.
-       If your BackgroundAnimation.js listens to those events, it can regenerate only when needed.
-       Alternatively, if your script exposes window.backgroundRegenerate = () => {...}
-       this page will call it safely on resize (debounced).
-  -->
     <script
       type="module"
       src="./js/animation/BackgroundAnimation.js"
