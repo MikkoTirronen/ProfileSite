@@ -24,7 +24,7 @@
         --max-width: 980px;
         --gutter: 24px;
         --radius: 14px;
-        --nav-height: 70px;
+        --nav-height: 20px;
       }
 
       :root[data-theme="dark"] {
@@ -34,6 +34,14 @@
         --accent: #f4b276;
         --bg-overlay: rgba(0, 0, 0, 0.35);
         --card-shadow: 0 14px 40px rgba(0, 0, 0, 0.5);
+      }
+      :root[data-theme="light"] .hero::before {
+        background: linear-gradient(
+          to bottom,
+          rgba(255, 255, 255, 0.55),
+          rgba(255, 255, 255, 0.35) 40%,
+          rgba(255, 255, 255, 0.15) 100%
+        );
       }
 
       /* Reset / Base */
@@ -149,6 +157,7 @@
         background: transparent;
         border: 1px solid rgba(0, 0, 0, 0.06);
         cursor: pointer;
+        margin-right: 20px;
       }
 
       /* Header */
@@ -176,7 +185,7 @@
         content: "";
         position: absolute;
         inset: 0;
-        background: rgba(255, 255, 255, 0.25); /* light mode */
+        background: rgba(255, 255, 255, 0.55);
         backdrop-filter: blur(14px) saturate(1.2);
         -webkit-backdrop-filter: blur(14px) saturate(1.2);
         z-index: 0;
@@ -380,11 +389,13 @@
           padding: var(--nav-height) 16px 80px;
         }
         .nav {
-          position: fixed;
-          left: 12px;
-          right: 12px;
-          top: 12px;
+          padding: 6px 10px;
+          display: flex;
+          justify-content: space-between;
+          
         }
+
+       
         .header {
           padding-top: 84px;
         }
@@ -418,6 +429,9 @@
         color: #fff;
         -webkit-text-stroke: 1px rgba(0, 0, 0, 0.6);
       }
+      :root[data-theme="dark"] .hero::before {
+        background: rgba(0, 0, 0, 0.55);
+      }
     </style>
   </head>
   <body data-theme="light">
@@ -429,7 +443,7 @@
     <nav class="nav" role="navigation" aria-label="Main navigation">
       <div class="nav-left">
         <!-- <img src="/assets/hammerIcon.png" alt="Brand Logo" class="brand-logo" width="50px" rounded /> -->
-       <!--<div class="brand">MikkoT</div>-->
+        <!--<div class="brand">MikkoT</div>-->
       </div>
 
       <div class="nav-links" role="menubar" aria-label="Sections">
