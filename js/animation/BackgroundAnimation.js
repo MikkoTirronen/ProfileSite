@@ -105,4 +105,4 @@ function resizeCanvasDebounced() {
 // ALWAYS size + draw immediately on load
 resizeCanvas();
 
-window.addEventListener("resize", resizeCanvasDebounced);
+// window.addEventListener("resize", resizeCanvasDebounced);
