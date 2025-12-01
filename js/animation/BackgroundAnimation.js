@@ -1,147 +1,191 @@
-// --- CREATE CANVAS ---------------------------------------------------------
+// -------------------------------------------------------------
+// CANVAS SETUP
+// -------------------------------------------------------------
 const canvas = document.createElement("canvas");
 canvas.id = "bg-animation";
 document.body.prepend(canvas);
 
 const ctx = canvas.getContext("2d");
 
-// Canvas styling
 Object.assign(canvas.style, {
   position: "fixed",
-  inset: 0,
+  inset: "0",
   width: "100vw",
   height: "100vh",
   zIndex: "-1",
-  pointerEvents: "none",
+  pointerEvents: "none"
 });
 
-// --- TILE CLASS -------------------------------------------------------------
+let staticTiles = [];
+let movingTiles = [];
+
+const colors = [
+  "#acc7a9", "#d0e1de", "#d9b5c3",
+  "#cb8f97", "#7380a1", "#e3d3ba",
+  "#418e96", "#c1afc0", "#dbb99e"
+];
+
+function randomColor() {
+  return colors[Math.floor(Math.random() * colors.length)];
+}
+
+// -------------------------------------------------------------
+// TILE CLASS
+// -------------------------------------------------------------
 class Tile {
-  constructor(x, y, w, h, color) {
-    this.x = x;
-    this.y = y;
-    this.w = w;
-    this.h = h;
-    this.color = color;
-    this.opacity = 1;        // Fade for existing tiles
-    this.fadeIn = false;     // If true, increases opacity from 0 → 1
+  constructor(x, y, w, h, color = null) {
+    this.x = x; this.y = y;
+    this.w = w; this.h = h;
+    this.color = color || randomColor();
   }
 
   draw() {
-    ctx.globalAlpha = this.opacity;
-
     ctx.fillStyle = this.color;
     ctx.strokeStyle = "black";
     ctx.lineWidth = 3;
     ctx.fillRect(this.x, this.y, this.w, this.h);
     ctx.strokeRect(this.x, this.y, this.w, this.h);
-
-    ctx.globalAlpha = 1;
-  }
-
-  update(dt, fallSpeed) {
-    // Move tile downward
-    this.y += fallSpeed * dt;
-
-    // Fade in if flagged
-    if (this.fadeIn && this.opacity < 1) {
-      this.opacity += dt * 0.0008; // fade speed
-      if (this.opacity > 1) this.opacity = 1;
-    }
   }
 }
 
-// --- PALETTE ---------------------------------------------------------------
-const PALETTE = [
-  "#acc7a9", "#d0e1de", "#d9b5c3",
-  "#cb8f97", "#7380a1", "#e3d3ba",
-  "#418e96", "#c1afc0", "#dbb99e",
-];
-
-function randomColor() {
-  return PALETTE[Math.floor(Math.random() * PALETTE.length)];
-}
-
-// --- RECURSIVE DIVIDE ------------------------------------------------------
-let allTiles = [];
-
-function divide(x, y, w, h, depth, direction) {
-  if (w < 5 || h < 5) return;
+// -------------------------------------------------------------
+// RECURSIVE DIVISION FOR STATIC BACKGROUND
+// -------------------------------------------------------------
+function divide(x, y, w, h, count, dir) {
+  if (w < 15 || h < 15) return;
 
   const split = Math.random() * 0.6 + 0.2;
-
   let tiles = [];
-  if (direction === 0) {
-    tiles.push({ x, y, w: w * split, h });
-    tiles.push({ x: x + w * split, y, w: w - w * split, h });
-    direction = 1;
+
+  if (dir === 0) {
+    tiles.push(new Tile(x, y, w * split, h));
+    tiles.push(new Tile(x + w * split, y, w - w * split, h));
+    dir = 1;
   } else {
-    tiles.push({ x, y, w, h: h * split });
-    tiles.push({ x, y: y + h * split, w, h: h - h * split });
-    direction = 0;
+    tiles.push(new Tile(x, y, w, h * split));
+    tiles.push(new Tile(x, y + h * split, w, h - h * split));
+    dir = 0;
   }
 
   for (let t of tiles) {
-    if (depth < 5) {
-      divide(t.x, t.y, t.w, t.h, depth + 1, direction);
+    if (count < 12) {
+      divide(t.x, t.y, t.w, t.h, count + 1, dir);
     } else {
-      allTiles.push(new Tile(t.x, t.y, t.w, t.h, randomColor()));
+      staticTiles.push(t);
     }
   }
 }
 
-// --- INITIAL DRAW ----------------------------------------------------------
-function regenerateScene() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-
-  allTiles = [];
+function generateStaticGrid() {
+  staticTiles = [];
   divide(0, 0, canvas.width, canvas.height, 0, 0);
 }
-regenerateScene();
 
-// --- HELPERS ---------------------------------------------------------------
+// -------------------------------------------------------------
+// MOVING TILE SPAWNING
+// -------------------------------------------------------------
+let lastSpawn = 0;
+const SPAWN_INTERVAL = 100; // spawn every 0.9 seconds
 
-// Make a new tile somewhere in the “top band”
-function createTileAtTop() {
-  // Pick a width band across the top
-  const w = Math.random() * 150 + 30;
-  const h = Math.random() * 150 + 30;
+function spawnMovingTile() {
+  const base = staticTiles[Math.floor(Math.random() * staticTiles.length)];
 
-  const x = Math.random() * (canvas.width - w);
-  const y = -h - 5; // Just above the top
+  const angle = (performance.now() * 0.00005) % (Math.PI * 2);
+  const speed = 0.25 + Math.random() * 0.35;
 
-  const t = new Tile(x, y, w, h, randomColor());
-  t.opacity = 0;
-  t.fadeIn = true;
-
-  allTiles.push(t);
+  movingTiles.push({
+    x: base.x,
+    y: base.y,
+    w: base.w,
+    h: base.h,
+    angle,
+    speed,
+    opacity: 0,
+    color: randomColor()
+  });
 }
 
-// --- ANIMATION -------------------------------------------------------------
-let lastTime = 0;
-const FALL_SPEED = 20; // px per second (slow drift)
+// -------------------------------------------------------------
+// MOVING TILES UPDATE + DRAW
+// -------------------------------------------------------------
+function updateMovingTiles() {
+  for (let i = movingTiles.length - 1; i >= 0; i--) {
+    const t = movingTiles[i];
 
-function animate(time) {
-  const dt = time - lastTime;
-  lastTime = time;
+    t.x += Math.cos(t.angle) * t.speed;
+    t.y += Math.sin(t.angle) * t.speed;
 
+    t.opacity += 0.01;
+    if (t.opacity > 1) t.opacity = 1;
+
+    if (
+      t.x + t.w < -200 ||
+      t.x > canvas.width + 200 ||
+      t.y + t.h < -200 ||
+      t.y > canvas.height + 200
+    ) {
+      movingTiles.splice(i, 1);
+    }
+  }
+}
+
+function drawMovingTiles() {
+ for (let t of movingTiles) {
+    ctx.globalAlpha = t.opacity;
+
+    // fill
+    ctx.fillStyle = t.color;
+    ctx.fillRect(t.x, t.y, t.w, t.h);
+
+    // border
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 3;
+    ctx.strokeRect(t.x, t.y, t.w, t.h);
+  }
+  ctx.globalAlpha = 1;
+}
+
+// -------------------------------------------------------------
+// STATIC DRAW
+// -------------------------------------------------------------
+function drawStaticGrid() {
+  for (let t of staticTiles) t.draw();
+}
+
+// -------------------------------------------------------------
+// ANIMATION LOOP
+// -------------------------------------------------------------
+function animate() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawStaticGrid();
 
-  // Update & draw tiles
-  for (let tile of allTiles) {
-    tile.update(dt, FALL_SPEED / 1000); // convert speed to per-ms
-    tile.draw();
+  const now = performance.now();
+  if (now - lastSpawn > SPAWN_INTERVAL) {
+    spawnMovingTile();
+    lastSpawn = now;
   }
 
-  // Remove tiles that fell off the bottom
-  allTiles = allTiles.filter(t => t.y < canvas.height + 50);
-
-  // Probability-based tile creation (keeps constant flow)
-  if (Math.random() < 0.01) {
-    createTileAtTop();
-  }
+  updateMovingTiles();
+  drawMovingTiles();
 
   requestAnimationFrame(animate);
 }
-requestAnimationFrame(animate);
+
+// -------------------------------------------------------------
+// INITIALIZATION
+// -------------------------------------------------------------
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  generateStaticGrid();
+}
+
+resizeCanvas();
+animate();
+
+window.addEventListener("resize", () => {
+  clearTimeout(window.__resizeTimer);
+  window.__resizeTimer = setTimeout(() => {
+    resizeCanvas();
+  }, 200);
+});
