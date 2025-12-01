@@ -23,14 +23,31 @@ class Tile {
     this.w = w;
     this.h = h;
     this.color = color;
+    this.opacity = 1;        // Fade for existing tiles
+    this.fadeIn = false;     // If true, increases opacity from 0 → 1
   }
 
   draw() {
+    ctx.globalAlpha = this.opacity;
+
     ctx.fillStyle = this.color;
     ctx.strokeStyle = "black";
     ctx.lineWidth = 3;
     ctx.fillRect(this.x, this.y, this.w, this.h);
     ctx.strokeRect(this.x, this.y, this.w, this.h);
+
+    ctx.globalAlpha = 1;
+  }
+
+  update(dt, fallSpeed) {
+    // Move tile downward
+    this.y += fallSpeed * dt;
+
+    // Fade in if flagged
+    if (this.fadeIn && this.opacity < 1) {
+      this.opacity += dt * 0.0008; // fade speed
+      if (this.opacity > 1) this.opacity = 1;
+    }
   }
 }
 
@@ -49,7 +66,7 @@ function randomColor() {
 let allTiles = [];
 
 function divide(x, y, w, h, depth, direction) {
-  if (w < 15 || h < 15) return;
+  if (w < 5 || h < 5) return;
 
   const split = Math.random() * 0.6 + 0.2;
 
@@ -65,7 +82,7 @@ function divide(x, y, w, h, depth, direction) {
   }
 
   for (let t of tiles) {
-    if (depth < 9) {
+    if (depth < 5) {
       divide(t.x, t.y, t.w, t.h, depth + 1, direction);
     } else {
       allTiles.push(new Tile(t.x, t.y, t.w, t.h, randomColor()));
@@ -74,44 +91,57 @@ function divide(x, y, w, h, depth, direction) {
 }
 
 // --- INITIAL DRAW ----------------------------------------------------------
-function resizeCanvas() {
+function regenerateScene() {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
+
   allTiles = [];
   divide(0, 0, canvas.width, canvas.height, 0, 0);
 }
-resizeCanvas();
+regenerateScene();
 
-// --- STRONG WOBBLE ANIMATION -----------------------------------------------
-function animate() {
+// --- HELPERS ---------------------------------------------------------------
+
+// Make a new tile somewhere in the “top band”
+function createTileAtTop() {
+  // Pick a width band across the top
+  const w = Math.random() * 150 + 30;
+  const h = Math.random() * 150 + 30;
+
+  const x = Math.random() * (canvas.width - w);
+  const y = -h - 5; // Just above the top
+
+  const t = new Tile(x, y, w, h, randomColor());
+  t.opacity = 0;
+  t.fadeIn = true;
+
+  allTiles.push(t);
+}
+
+// --- ANIMATION -------------------------------------------------------------
+let lastTime = 0;
+const FALL_SPEED = 20; // px per second (slow drift)
+
+function animate(time) {
+  const dt = time - lastTime;
+  lastTime = time;
+
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  const t = Date.now() * 0.0003; // ← much faster so motion is obvious
-
-  const driftX = Math.sin(t) * 30;  // ← big movement
-  const driftY = Math.cos(t * 0.7) * 30;
-
-  const rotation = Math.sin(t * 0.5) * 0.03; // ← 1.5 degrees
-  const scale = 1 + Math.sin(t * 0.8) * 0.03; // ← 3% scaling
-
-  ctx.save();
-
-  // Transform origin
-  ctx.translate(canvas.width / 2, canvas.height / 2);
-  ctx.scale(scale, scale);
-  ctx.rotate(rotation);
-
-  // Apply drift
-  ctx.translate(-canvas.width / 2 + driftX, -canvas.height / 2 + driftY);
-
-  // Draw tiles
+  // Update & draw tiles
   for (let tile of allTiles) {
+    tile.update(dt, FALL_SPEED / 1000); // convert speed to per-ms
     tile.draw();
   }
 
-  ctx.restore();
+  // Remove tiles that fell off the bottom
+  allTiles = allTiles.filter(t => t.y < canvas.height + 50);
+
+  // Probability-based tile creation (keeps constant flow)
+  if (Math.random() < 0.01) {
+    createTileAtTop();
+  }
 
   requestAnimationFrame(animate);
 }
-
-animate();
+requestAnimationFrame(animate);
