@@ -73,7 +73,7 @@ function divide(x, y, w, h, count, direction) {
   }
 
   for (let t of tiles) {
-    if (count < 5) {
+    if (count < 15) {
       divide(t.x, t.y, t.w, t.h, count + 1, direction);
     } else {
       t.display();
