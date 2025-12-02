@@ -1,3 +1,4 @@
+// --- CREATE CANVAS ---------------------------------------------------------
 const canvas = document.createElement("canvas");
 canvas.id = "bg-animation";
 document.body.prepend(canvas);
@@ -7,25 +8,34 @@ const ctx = canvas.getContext("2d");
 // Canvas styling
 Object.assign(canvas.style, {
   position: "fixed",
-  inset: "0",
+  inset: 0,
   width: "100vw",
   height: "100vh",
   zIndex: "-1",
-  pointerEvents: "none"
+  pointerEvents: "none",
 });
 
-// Tile class
+// --- TILE CLASS -------------------------------------------------------------
 class Tile {
-  constructor(x, y, w, h) {
+  constructor(x, y, w, h, color) {
     this.x = x;
     this.y = y;
     this.w = w;
     this.h = h;
+    this.color = color;
   }
 
-  display() {
+  draw() {
+    ctx.fillStyle = this.color;
+    ctx.strokeStyle = "white";
+    ctx.lineWidth = 2;
+    ctx.fillRect(this.x, this.y, this.w, this.h);
+    ctx.strokeRect(this.x, this.y, this.w, this.h);
+  }
+}
 
-const colors = [
+// --- PALETTE ---------------------------------------------------------------
+const PALETTE = [
   "#acc7a9",
   "#d0e1de",
   "#d9b5c3",
@@ -37,72 +47,78 @@ const colors = [
   "#dbb99e",
 ];
 
-
-
-
-
-
-
-
-
-
-
-    ctx.fillStyle = colors[Math.floor(Math.random() * colors.length)];
-    ctx.strokeStyle = "black";
-    ctx.lineWidth = 3;
-    ctx.fillRect(this.x, this.y, this.w, this.h);
-    ctx.strokeRect(this.x, this.y, this.w, this.h);
-  }
+function randomColor() {
+  return PALETTE[Math.floor(Math.random() * PALETTE.length)];
 }
 
-// Recursive divide function
-function divide(x, y, w, h, count, direction) {
+// --- RECURSIVE DIVIDE ------------------------------------------------------
+let allTiles = [];
+
+function divide(x, y, w, h, depth, direction) {
   if (w < 5 || h < 5) return;
 
   const split = Math.random() * 0.6 + 0.2;
-  let tiles = [];
 
+  let tiles = [];
   if (direction === 0) {
-    tiles.push(new Tile(x, y, w * split, h));
-    tiles.push(new Tile(x + w * split, y, w - w * split, h));
+    tiles.push({ x, y, w: w * split, h });
+    tiles.push({ x: x + w * split, y, w: w - w * split, h });
     direction = 1;
   } else {
-    tiles.push(new Tile(x, y, w, h * split));
-    tiles.push(new Tile(x, y + h * split, w, h - h * split));
+    tiles.push({ x, y, w, h: h * split });
+    tiles.push({ x, y: y + h * split, w, h: h - h * split });
     direction = 0;
   }
 
   for (let t of tiles) {
-    if (count < 15) {
-      divide(t.x, t.y, t.w, t.h, count + 1, direction);
+    if (depth < 12 && Math.random() < 0.9) {
+      divide(t.x, t.y, t.w, t.h, depth + 1, direction);
     } else {
-      t.display();
+      allTiles.push(new Tile(t.x, t.y, t.w, t.h, randomColor()));
     }
   }
 }
 
-// Draw tiles
-function generateTiles() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+// --- INITIAL DRAW ----------------------------------------------------------
+function resizeCanvas() {
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = window.innerWidth * dpr;
+  canvas.height = window.innerHeight * dpr;
+  ctx.scale(dpr, dpr);
+  allTiles = [];
   divide(0, 0, canvas.width, canvas.height, 0, 0);
 }
-
-// Resize + draw immediately
-function resizeCanvas() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-  generateTiles();
-}
-
-// Debounced resize
-let resizeTimeout;
-function resizeCanvasDebounced() {
-  clearTimeout(resizeTimeout);
-  resizeTimeout = setTimeout(resizeCanvas, 200);
-}
-
-// --- INITIALIZATION ---
-// ALWAYS size + draw immediately on load
 resizeCanvas();
 
-// window.addEventListener("resize", resizeCanvasDebounced);
+// --- STRONG WOBBLE ANIMATION -----------------------------------------------
+function animate() {
+  ctx.setTransform(1, 0, 0, 1, 0, 0); // reset
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.imageSmoothingEnabled = false;
+
+  const t = Date.now() * 0.0003;
+  const driftX = Math.sin(t) * 30;
+  const driftY = Math.cos(t * 0.7) * 30;
+  const rotation = Math.sin(t * 0.5) * 0.03;
+  const scale = 1 + Math.sin(t * 0.8) * 0.03;
+
+  ctx.save();
+  ctx.translate(canvas.width / 2, canvas.height / 2);
+  ctx.scale(scale, scale);
+  ctx.rotate(rotation);
+  ctx.translate(-canvas.width / 2 + driftX, -canvas.height / 2 + driftY);
+
+  for (let tile of allTiles) {
+    ctx.fillStyle = tile.color;
+    ctx.strokeStyle = "white";
+    ctx.lineWidth = 2;
+    ctx.fillRect(Math.floor(tile.x), Math.floor(tile.y), Math.floor(tile.w), Math.floor(tile.h));
+    ctx.strokeRect(Math.floor(tile.x) + 0.5, Math.floor(tile.y) + 0.5, Math.floor(tile.w), Math.floor(tile.h));
+  }
+
+  ctx.restore();
+  requestAnimationFrame(animate);
+}
+
+
+animate();
