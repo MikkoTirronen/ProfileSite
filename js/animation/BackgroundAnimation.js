@@ -28,7 +28,7 @@ class Tile {
   draw() {
     ctx.fillStyle = this.color;
     ctx.strokeStyle = "white";
-    ctx.lineWidth = 2;
+    // ctx.lineWidth = 2;
     ctx.fillRect(this.x, this.y, this.w, this.h);
     ctx.strokeRect(this.x, this.y, this.w, this.h);
   }
@@ -36,15 +36,15 @@ class Tile {
 
 // --- PALETTE ---------------------------------------------------------------
 const PALETTE = [
-  "#acc7a9",
-  "#d0e1de",
-  "#d9b5c3",
-  "#cb8f97",
-  "#7380a1",
-  "#e3d3ba",
-  "#418e96",
-  "#c1afc0",
-  "#dbb99e",
+  "#6e8570", // muted moss green
+  "#8ea7ab", // steel blue-grey
+  "#a48d7b", // warm stone brown
+  "#8c5f5f", // earthy desaturated red
+  "#4b5773", // deep slate blue
+  "#b7a98a", // taupe sand
+  "#2f6d72", // muted teal
+  "#81758b", // desaturated purple-grey
+  "#a88867"  // warm ochre brown
 ];
 
 function randomColor() {
@@ -71,7 +71,7 @@ function divide(x, y, w, h, depth, direction) {
   }
 
   for (let t of tiles) {
-    if (depth < 12 && Math.random() < 0.9) {
+    if (depth < 3 && Math.random() < 0.6) {
       divide(t.x, t.y, t.w, t.h, depth + 1, direction);
     } else {
       allTiles.push(new Tile(t.x, t.y, t.w, t.h, randomColor()));

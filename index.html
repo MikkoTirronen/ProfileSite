@@ -9,7 +9,11 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="shortcut icon" href="/assets/hammerIcon.png" type="image/png" />
+    <link
+      rel="shortcut icon"
+      href="/assets/favicon-cropped.png"
+      type="image/png"
+    />
 
     <meta name="viewport" content="width=device-width,initial-scale=1" />
 
@@ -236,8 +240,8 @@
       /* About grid */
       .about-grid {
         display: grid;
-        grid-template-columns: 1fr 320px;
-        gap: 28px;
+        grid-template-columns: 3fr 4fr;
+        gap: 18px;
         align-items: center;
       }
       .about-text p {
@@ -249,13 +253,14 @@
       .about-photo {
         width: 100%;
         max-width: 320px;
-        border-radius: 12px;
+        border-radius: 16px;
         overflow: hidden;
-        border: 6px solid rgba(0, 0, 0, 0.06);
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        padding-top: 10px;
+        /* border: 6px solid rgba(0, 0, 0, 0.06);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08); */
       }
       .about-photo img {
-        display: block;
+        display: inline;
         width: 100%;
         height: auto;
       }
@@ -421,6 +426,12 @@
         <div class="nav-left">
           <!-- optional logo or name -->
           <!--<div class="brand">MikkoT</div>-->
+          <img
+            src="/assets/favicon-cropped.png"
+            alt="Mikko Tirronen"
+            width="62"
+            height="36"
+          />
         </div>
 
         <div class="nav-links" role="menubar" aria-label="Sections">
@@ -451,26 +462,26 @@
 
       <!-- ABOUT -->
       <section class="card parallax" id="about">
-        <div class="about-grid">
-          <div class="about-text">
-            <h2>About</h2>
-            <p>
-              Hi — I build web apps that are pragmatic and visually considerate.
-              I enjoy working across stacks, designing clean APIs, and adding
-              small creative flourishes on the frontend. My current interests:
-              generative art, smooth UX and resilient backend patterns.
-            </p>
-            <p class="muted">
-              This site showcases a few projects and experiments — the
-              generative background is a small creative playground I use to test
-              ideas.
-            </p>
-          </div>
-          <div class="about-photo">
-            <img
-              src="https://via.placeholder.com/600x600.png?text=Profile+Photo"
-              alt="Profile photo"
-            />
+        <div class="about-text">
+          <h2>About</h2>
+          <div class="about-grid">
+            <div class="about-photo">
+              <img src="./assets/profile-square.png" alt="Profile photo" />
+            </div>
+            <div>
+              <p>
+                Hi — I build web apps that are pragmatic and visually
+                considerate. I enjoy working across stacks, designing clean
+                APIs, and adding small creative flourishes on the frontend. My
+                current interests: generative art, smooth UX and resilient
+                backend patterns.
+              </p>
+              <p class="">
+                This site showcases a few projects and experiments — the
+                generative background is a small creative playground I use to
+                test ideas.
+              </p>
+            </div>
           </div>
         </div>
       </section>
